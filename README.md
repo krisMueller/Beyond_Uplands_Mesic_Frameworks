@@ -106,7 +106,7 @@ If you use this dataset or code in your research, please cite the following manu
 
 > Mueller, K. R., et al. (2025). Beyond Uplands: Integrating Riparian Areas into Sagebrush Conservation Design for a More Resilient West. *[Journal Name TBD]*.
 
-The version-of-record repository for the manuscript can be found at Zenodo: <https://doi.org/10.5281/zenodo.XXXXXX>
+The version-of-record repository for the manuscript can be found at Zenodo: <https://doi.org/10.5281/zenodo.17904662>
 
 ## License
 
