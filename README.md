@@ -1,6 +1,6 @@
 # Beyond Uplands: Integrating Riparian Areas into Sagebrush Conservation Design
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXX) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17904662.svg)](https://doi.org/10.5281/zenodo.17904662) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ------------------------------------------------------------------------
 
