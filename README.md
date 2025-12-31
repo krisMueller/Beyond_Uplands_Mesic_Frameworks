@@ -55,7 +55,7 @@ You must download the input shapefiles to run the replication script.
 
 2.  **Download Data Bundle from Zenodo:**
 
-    -   Navigate to the **Zenodo Record**: <https://doi.org/10.5281/zenodo.XXXXXX>
+    -   Navigate to the **Zenodo Record**: <https://doi.org/10.5281/zenodo.17904662>
     -   Download the **input_data.zip** file).
     -   Extract the contents into the `data/input_data/` folder inside your cloned repository.
 
