@@ -4,14 +4,19 @@
 .DS_Store
 
 # 1. Ignore R outputs
-outputs/figures/*
-outputs/tables/*
-outputs/spatial/*
-!outputs/.keep
+scripts/outputs/figures/*
+scripts/outputs/tables/*
+scripts/outputs/spatial/*
+!scripts/outputs/figures/.keep
+!scripts/outputs/tables/.keep
+!scripts/outputs/spatial/.keep
 
 # 2. Ignore ALL Data Inputs (Shapefiles, DBFs, Zips)
 data/input_data/*
 !data/input_data/.keep
 
-# (The line above "!data/input_data/.keep" allows the empty folder structure to exist on GitHub, 
+# (The line above "!data/input_data/.keep" allows the empty folder structure to exist on GitHub,
 #  but blocks the actual data files inside it).
+
+# 3. Ignore working/draft scripts
+scripts/03_R_Conservation_Tiers_WORKING.R

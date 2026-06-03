@@ -38,12 +38,25 @@ var northernGreatPlains = "Northwestern Glaciated Plains";
 // The resulting 'filteredCollection' is used to create the DGO mask.
 
 {
-  var basePath = 'projects/wlfw-um/assets/mesic/dgoMetricsOutput_processed/';
+  var basePath = 'projects/wlfw-um/assets/mesic/dgoMetricsOutput_processed_new/';
 
   var assetSuffixes = [
-    'processed_grid_cell_0', 'processed_grid_cell_1', 'processed_grid_cell_2',
-    'processed_grid_cell_3', 'processed_grid_cell_4', 'processed_grid_cell_5',
-    'processed_grid_cell_6', 'processed_grid_cell_7', 'processed_grid_cell_8'
+   '20260324_DgoMetrics_processed_cell_0',
+  '20260324_DgoMetrics_processed_cell_1',
+  '20260324_DgoMetrics_processed_cell_2',
+  '20260324_DgoMetrics_processed_cell_3',
+  '20260324_DgoMetrics_processed_cell_4_sub_0',
+  '20260324_DgoMetrics_processed_cell_4_sub_1',
+  '20260324_DgoMetrics_processed_cell_4_sub_2',
+  '20260324_DgoMetrics_processed_cell_4_sub_3',
+  '20260324_DgoMetrics_processed_cell_4_sub_4',
+  '20260324_DgoMetrics_processed_cell_4_sub_5',
+  '20260324_DgoMetrics_processed_cell_4_sub_6',
+  '20260324_DgoMetrics_processed_cell_4_sub_7',
+  '20260324_DgoMetrics_processed_cell_5',
+  '20260324_DgoMetrics_processed_cell_6',
+  '20260324_DgoMetrics_processed_cell_7',
+  '20260324_DgoMetrics_processed_cell_8'
   ];
 
   var mergedCollection = ee.FeatureCollection(assetSuffixes.map(function(suffix) {

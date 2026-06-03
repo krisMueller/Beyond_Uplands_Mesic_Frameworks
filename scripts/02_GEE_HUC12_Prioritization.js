@@ -24,7 +24,7 @@
 //  Import DGO Features (Valley Bottom Segments)
 // ------------------------------------------------
 {
-  var basePath = 'projects/wlfw-um/assets/mesic/dgoMetricsOutput_processed/';
+  var basePath = 'projects/ee-krismueller134/assets/Mesic/ch2/final_app_layers/dgoMetricsOutput_processed/';
   var assetSuffixes = [
     'processed_grid_cell_0', 'processed_grid_cell_1', 'processed_grid_cell_2',
     'processed_grid_cell_3', 'processed_grid_cell_4', 'processed_grid_cell_5',
@@ -66,7 +66,7 @@ var nonDevelopedMask = nass.select('cropland')
 // Non-Cultivated Mask
 var cropLandcoverMask = nass
   .sort('system:time_start', false)
-  .filter(ee.Filter.neq('system:index', '2024'))
+  .filter(ee.Filter.inList('system:index', ['2024', '2025']).not())
   .limit(11)
   .map(function(image) {return image.select('cultivated').eq(2);})
   .sum().gt(0).eq(0);
@@ -88,6 +88,9 @@ var standardizedNdviCollection = ndviCollection.map(function(image) {
 
 var collectionSize = standardizedNdviCollection.size();
 var vegPersistencePercent = standardizedNdviCollection
+  .sort('system:time_start', false)
+  .limit(40)
+// print(vegPersistencePercent)
   .map(function(img){ return img.gte(0.3); }) 
   .sum()
   .multiply(100.0)
@@ -134,7 +137,7 @@ var isWithin5km2020Growth = createBufferMask(scd2020Growth, dgoMask, nonDevelope
 
 // Ownership (Public vs Private)
 var padus = ee.FeatureCollection("projects/ee-krismueller134/assets/Misc/biome_clipped_landOwnership_2025");
-var ownNames = ['Bureau of Land Management', 'Forest Service', 'U.S. Fish and Wildlife Service', 'National Park Service', 'American Indian Lands', 'Non-Governmental Organization', 'State Land Board', 'State Department of Land', 'State Fish and Wildlife', 'Other or Unknown State Land'];
+var ownNames = ['Bureau of Land Management', 'Forest Service', 'U.S. Fish and Wildlife Service', 'National Park Service', 'State Land Board', 'State Department of Land', 'State Fish and Wildlife', 'Other or Unknown State Land'];
 var publicImg = ee.Image().paint(padus.filter(ee.Filter.inList('MngNm_Desc', ownNames)), 1).rename('isPublic').unmask();
 
 var privateLands = publicImg.eq(0).rename('isPrivate').updateMask(dgoMask.eq(1)).reproject('EPSG:4326', null, 5);

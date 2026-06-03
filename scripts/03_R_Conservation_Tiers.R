@@ -27,6 +27,8 @@ library(scales)
 library(forcats)
 library(patchwork)
 
+# setwd() # ---> set working directory to the folder with the script
+
 # --- Setup Output Directories ---
 export_date <- format(Sys.Date(), "%Y%m%d")   # ---- ASSIGNS CURRENT DATE TO BEGINNING OF OUTPUTS -----
 
@@ -41,8 +43,8 @@ dir.create(output_shp_dir, showWarnings = FALSE, recursive = TRUE)
 
 # --- Load Data ---
 # Using the cleaned filenames and relative paths
-hucs_path   <- "data/input_data/YYYYMMDD_HUC12_DGO_proportions_Metrics_SHP.shp"
-states_path <- "data/input_data/tl_2022_us_state.shp"
+hucs_path   <- "../data/input_data/YYYYMMDD_HUC12_DGO_proportions_Metrics_SHP.shp"
+states_path <- "../data/input_data/tl_2022_us_state.shp"
 
 if (!file.exists(hucs_path)) stop("DATA MISSING: HUC12 Shapefile not found in data/")
 if (!file.exists(states_path)) stop("DATA MISSING: States Shapefile not found in data/")
@@ -293,6 +295,134 @@ final_state_plot <- ggplot(plot_data_states, aes(y = State, fill = management_ca
 print(final_state_plot)
 ggsave(filename = file.path(output_fig_dir, sprintf("%s_State_Ownership_Comparison.png", export_date)), 
        plot = final_state_plot, width = 6, height = 5, dpi = 300, bg = "white")
+
+
+# ==============================================================================
+# PART 3B: COMBINED SUMMARY FIGURE (Panels A, B, C)
+# Panel A: Proportion of Watersheds (overall)
+# Panel B: Ownership of Valley Bottoms (overall, stacked)
+# Panel C: Cross-state butterfly — PUBLIC on LEFT, PRIVATE on RIGHT
+# ==============================================================================
+cat("\n--- Running Part 3B: Combined Summary Figure ---\n")
+
+# ------------------------------------------------------------------------------
+# Panel A: Proportion of Watersheds
+# (uses plot_df already built in Part 1)
+# ------------------------------------------------------------------------------
+
+p_A <- ggplot(plot_df, aes(x = percent_total_hucs, y = management_category, fill = management_category)) +
+  geom_col(width = 0.75) +
+  geom_text(aes(label = sprintf("%.0f%%", percent_total_hucs)),
+            hjust = -0.2, size = 5, fontface = "bold") +
+  scale_fill_manual(values = priority_colors, guide = "none") +
+  scale_x_continuous(
+    labels = scales::percent_format(scale = 1),
+    limits = c(0, ceiling(max(plot_df$percent_total_hucs) / 5) * 5),
+    expand = expansion(mult = c(0, 0.18))
+  ) +
+  labs(title = "Proportion of Watersheds", x = NULL, y = NULL) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_text(face = "bold")
+  )
+
+# ------------------------------------------------------------------------------
+# Panel B: Ownership of Valley Bottoms (overall biome-wide stacked bar)
+# Derives from management_summary built in Part 1
+# ------------------------------------------------------------------------------
+
+ownership_df_overall <- management_summary %>%
+  filter(management_category %in% priority_levels) %>%
+  mutate(
+    management_category = factor(as.character(management_category), levels = priority_levels),
+    pct_public  = if_else(total_vb_area_ha > 0, total_vb_area_public_ha  / total_vb_area_ha, 0),
+    pct_private = if_else(total_vb_area_ha > 0, total_vb_area_private_ha / total_vb_area_ha, 0)
+  ) %>%
+  select(management_category, pct_public, pct_private) %>%
+  pivot_longer(cols = c("pct_public", "pct_private"),
+               names_to = "ownership_type", values_to = "percentage") %>%
+  mutate(
+    ownership_type = recode(ownership_type, "pct_public" = "Public", "pct_private" = "Private"),
+    management_category = fct_rev(factor(management_category, levels = priority_levels))
+  )
+
+p_B <- ggplot(ownership_df_overall,
+              aes(x = percentage, y = management_category,
+                  fill = factor(ownership_type, levels = c("Private", "Public")))) +
+  geom_col(width = 0.75) +
+  geom_text(
+    aes(label = if_else(percentage > 0.05, sprintf("%.0f%%", percentage * 100), ""),
+        color = ownership_type),
+    position = position_stack(vjust = 0.5),
+    size = 5, fontface = "bold"
+  ) +
+  scale_fill_manual(name = NULL,
+                    values = c("Public" = "black", "Private" = "lightgrey"),
+                    guide = guide_legend(reverse = TRUE)) +
+  scale_color_manual(values = c("Private" = "black", "Public" = "white"), guide = "none") +
+  scale_x_continuous(labels = scales::percent_format(), breaks = c(0, 0.5, 1.0)) +
+  labs(title = "Ownership of Valley Bottoms", x = NULL, y = NULL) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_blank(),
+    legend.position = "bottom",
+    legend.key.size = unit(0.5, "cm")
+  )
+
+# ------------------------------------------------------------------------------
+# Panel C: Cross-state butterfly — PUBLIC on LEFT, PRIVATE on RIGHT
+# (flipped from original: public_acres goes negative / left side)
+# Uses plot_data_states and max_limit already built in Part 3
+# ------------------------------------------------------------------------------
+
+p_C <- ggplot(plot_data_states, aes(y = State, fill = management_category)) +
+  # Public bars extend LEFT (negative)
+  geom_col(aes(x = -public_acres), width = 0.8) +
+  # Private bars extend RIGHT (positive)
+  geom_col(aes(x = private_acres), width = 0.8) +
+  geom_vline(xintercept = 0, color = "grey40", linewidth = 0.5) +
+  annotate("text", x = -max_limit, y = length(state_order) + 0.8,
+           label = "Public Lands", fontface = "bold", hjust = 0) +
+  annotate("text", x =  max_limit, y = length(state_order) + 0.8,
+           label = "Private Lands", fontface = "bold", hjust = 1) +
+  scale_x_continuous(
+    labels = function(x) scales::comma(abs(x) / 1e6, accuracy = 1),
+    limits = c(-max_limit, max_limit)
+  ) +
+  scale_fill_manual(values = priority_colors, name = NULL) +
+  coord_cartesian(clip = "off") +
+  labs(x = "Area (millions of acres)", y = NULL) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.margin = margin(t = 25, r = 10, b = 5, l = 10),
+    legend.position = "bottom",
+    axis.text.y = element_text(face = "bold"),
+    panel.grid.major.y = element_blank()
+  )
+
+# ------------------------------------------------------------------------------
+# Combine with patchwork: (A | B) over C, with panel labels A, B, C
+# ------------------------------------------------------------------------------
+
+combined_fig <- (p_A | p_B) / p_C +
+  plot_layout(heights = c(1, 2)) +
+  plot_annotation(tag_levels = "A") &
+  theme(plot.tag = element_text(face = "bold", size = 14))
+
+ggsave(
+  filename = file.path(output_fig_dir, sprintf("%s_Combined_Summary_Figure.png", export_date)),
+  plot     = combined_fig,
+  width    = 10,
+  height   = 10,
+  dpi      = 300,
+  bg       = "white"
+)
+
+cat("Combined figure saved.\n")
 
 
 # ==============================================================================
